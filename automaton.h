@@ -5,14 +5,16 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 // Класс для представления состояния автомата
 class State {
 public:
     int name;  // Имя состояния
-    std::map<int, int> transitions;  // Переходы: символ -> следующее состояние
+    std::unordered_map<int, int> transitions;  // Переходы: символ -> следующее состояние
 
-    State(const int& name, const std::map<int, int>& transitions)
+    State(const int& name, const std::unordered_map<int, int>& transitions)
         : name(name), transitions(transitions) {}
 
     void print() const {
@@ -28,11 +30,11 @@ class Automaton {
 public:
     std::vector<State> states;  // Список состояний (объекты State)
     int start;  // Начальное состояние
-    std::vector<int> finals;  // Финальные состояния
+    std::unordered_set<int> finals;  // Финальные состояния
     std::vector<int> alphabet;  // Алфавит автомата
 
     Automaton(const std::vector<State>& states, const int& start, 
-              const std::vector<int>& finals, const std::vector<int>& alphabet)
+              const std::unordered_set<int>& finals, const std::vector<int>& alphabet)
         : states(states), start(start), finals(finals), alphabet(alphabet) {}
 
     void print() const {
