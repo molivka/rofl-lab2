@@ -1,6 +1,7 @@
 #include "automaton.h"
 #include "InclusionRequest.cpp"
 #include "Visualisation.cpp"
+#include "CanonNum.cpp"
 int main() {
     State q0(0, {{0, 1}, {1, 0}});
     State q1(1, {{0, 0}, {5, 2}});
@@ -35,6 +36,17 @@ int main() {
     Automaton automaton2(states2, start2, finals2, alphabet);
 
     // Visualize Automaton
+    Visualize(automaton2);
+
+    // Canonical Numbering 
+    std::vector<int> canonicalOrder = canonicalNumbering(automaton2);
+
+    // Выводим каноническую нумерацию
+    std::cout << "Canonical Numering: " << std::endl;
+    for (size_t i = 0; i < canonicalOrder.size(); ++i) {
+        std::cout << "State " << canonicalOrder[i] << " -> Number " << i << std::endl;
+    }
+    
     Visualize(automaton2);
     return 0;
 }
