@@ -1,8 +1,11 @@
 #include "automaton.h"
+#include "generateMAT.cpp"
 #include "InclusionRequest.cpp"
 #include "Visualisation.cpp"
 #include "CanonNum.cpp"
 int main() {
+    std::srand(std::time(0)); //необходимо для корректной работы рандома
+    
     State q0(0, {{0, 1}, {1, 0}});
     State q1(1, {{0, 0}, {5, 2}});
     State q2(2, {{8, 2}, {1, 2}});
@@ -48,5 +51,10 @@ int main() {
     }
     
     Visualize(automaton2);
+
+    Automaton result = generateMAT();
+    result.print();
+    Visualize(result);
+    
     return 0;
 }
