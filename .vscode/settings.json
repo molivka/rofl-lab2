@@ -58,6 +58,14 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "algorithm": "cpp",
-        "optional": "cpp"
+        "optional": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "functional": "cpp",
+        "queue": "cpp",
+        "ranges": "cpp",
+        "set": "cpp",
+        "span": "cpp",
+        "stack": "cpp"
     }
 }
