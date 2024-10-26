@@ -23,15 +23,23 @@ enum LexemeType { EOL, ATOM, LBR, RBR, DOT };
 class State {
 public:
     int name;  // Имя состояния
-    std::unordered_map<int, int> transitions;  // Переходы: символ -> следующее состояние
+    std::multimap<int, int> transitions1;  // Переходы: символ -> следующее состояние (с учетом эпсилон)
+    std::unordered_map<int, int> transitions;
 
-    State(const int& name, const std::unordered_map<int, int>& transitions)
-        : name(name), transitions(transitions) {}
+    State(const int& name, const std::multimap<int, int>& transitions1, const std::unordered_map<int, int>& transitions)
+        : name(name), transitions1(transitions1), transitions(transitions) {}
 
     void print() const {
         std::cout << "State " << name << " transitions:\n";
-        for (const auto& transition : transitions) {
-            std::cout << "  " << name << " -- \"" << transition.first << "\" --> " << transition.second << "\n";
+        
+        if (transitions.empty()) {
+            for (const auto& transition : transitions1) {
+                std::cout << "  " << name << " -- \"" << transition.first << "\" --> " << transition.second << "\n";
+            }
+        } else {
+            for (const auto& transition : transitions) {
+                std::cout << "  " << name << " -- \"" << transition.first << "\" --> " << transition.second << "\n";
+            }
         }
     }
 };
@@ -62,12 +70,12 @@ public:
         Automaton repeated_automaton = clone();
 
         for (int final_state : finals) {
-            repeated_automaton.states[final_state].transitions[-1] = start;
+            repeated_automaton.states[final_state].transitions1.insert({-1, start});
         }
 
         if (minRepeats == 0) {
             int new_start = repeated_automaton.states.size();
-            repeated_automaton.states.push_back(State(new_start, {{-1, start}}));
+            repeated_automaton.states.push_back(State(new_start, {{-1, start}}, {}));
             return Automaton(repeated_automaton.states, new_start, finals, alphabet, type);
         }
 
@@ -81,7 +89,7 @@ public:
         for (const auto& fin : finals) {
             std::cout << fin << " ";
         }
-        std::cout << "\nStates and transitions:\n";
+        std::cout << "\nStates and transitions1:\n";
         for (const auto& state : states) {
             state.print();
         }
