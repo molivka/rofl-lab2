@@ -25,7 +25,7 @@ Automaton minimize(const Automaton& automaton) {
     int n = automaton.states.size();
     std::vector<std::vector<bool>> table(n, std::vector<bool>(n, false));
 	
-	//помечаем все пары, где одно из состояний финальное
+//помечаем все пары, где одно из состояний финальное
     for (int i = 0; i < n; ++i) {
         for (int j = i; j < n; ++j) {
             if (areStateFinal(i, automaton) != areStateFinal(j, automaton)) {
@@ -34,7 +34,7 @@ Automaton minimize(const Automaton& automaton) {
             }
         }
     }
-	//помечаем остальные пары
+//помечаем остальные пары
     bool changed;
     do {
         changed = false;
@@ -54,10 +54,10 @@ Automaton minimize(const Automaton& automaton) {
         }
     } while (changed);
 
-    //объединяем эквивалентные состояния
+//объединяем эквивалентные состояния
     std::vector<std::unordered_set<int>> partitions;
     std::vector<int> state_to_mainState(n, -1);
-	//проходим по строке состояния и собираем в группу эквивалентные ему 
+//проходим по строке состояния и собираем в группу эквивалентные ему 
     for (int i = 0; i < n; ++i) {
         if (state_to_mainState[i] == -1) {
         	int mainState = i; //назначаем состояние, в которое перейдут все эквивалентные
@@ -90,10 +90,10 @@ Automaton minimize(const Automaton& automaton) {
         new_states.emplace_back(state_name, new_transitions);
     }
 
-    // начальное состояние нового автомата
+// начальное состояние нового автомата
     int new_start = state_to_mainState[automaton.start];
     
-    // финальные состояния нового автомата
+// финальные состояния нового автомата
     std::unordered_set<int> new_finals;
     for (const auto& partition : partitions) {
         for (const int& state : partition) {
