@@ -26,8 +26,9 @@ bool isValid(const Automaton& automaton) {
         int currentState = toVisit.top();
         toVisit.pop();
         
-        const auto& transitions = automaton.states[currentState].transitions;
-        for (const auto& transition : transitions) {
+        // Обходим все возможные переходы из текущего состояния
+        const auto& transitions1 = automaton.states[currentState].transitions1;
+        for (const auto& transition : transitions1) {
             int nextState = transition.second;
             if (visited.find(nextState) == visited.end()) {
                 visited.insert(nextState);
@@ -46,43 +47,6 @@ bool isValid(const Automaton& automaton) {
     return true;
 }
 
-void ensureSingleEpsilonTransition(std::vector<State>& states) {
-    int currentSize = states.size();
-    
-    for (auto& state : states) {
-        // Находим все ε-переходы из текущего состояния
-        std::vector<int> epsilonTargets;
-        for (const auto& transition : state.transitions) {
-            if (transition.first == -1) {
-                epsilonTargets.push_back(transition.second);
-            }
-        }
-
-        // Если больше одного ε-перехода, создаем цепочку промежуточных состояний
-        if (epsilonTargets.size() > 1) {
-            int previousStateIndex = state.name;
-            
-            // Создаем цепочку промежуточных состояний
-            for (size_t i = 0; i < epsilonTargets.size(); ++i) {
-                int target = epsilonTargets[i];
-                int intermediateStateIndex = currentSize++;
-                
-                // Добавляем новое промежуточное состояние с единственным ε-переходом
-                states.emplace_back(intermediateStateIndex, std::unordered_map<int, int>{{-1, target}});
-                
-                // Обновляем переход в исходном состоянии или предыдущем промежуточном состоянии
-                if (i == 0) {
-                    state.transitions[-1] = intermediateStateIndex;
-                } else {
-                    states[previousStateIndex].transitions[-1] = intermediateStateIndex;
-                }
-                
-                previousStateIndex = intermediateStateIndex;
-            }
-        }
-    }
-}
-
 // Объединение автоматов
 Automaton unionAutomaton(const Automaton& A1, const Automaton& A2) {
     std::vector<State> new_states = A1.states; // Копируем состояния первого автомата
@@ -90,19 +54,24 @@ Automaton unionAutomaton(const Automaton& A1, const Automaton& A2) {
 
     // Переименовываем состояния второго автомата и добавляем их в новый вектор
     for (const auto& state : A2.states) {
-        std::unordered_map<int, int> new_transitions;
-        for (const auto& transition : state.transitions) {
-            new_transitions[transition.first] = transition.second + offset;
+        std::multimap<int, int> new_transitions1;
+        for (const auto& transition : state.transitions1) {
+            new_transitions1.insert({transition.first, transition.second + offset});
         }
-        new_states.push_back(State(state.name + offset, new_transitions));
+        new_states.push_back(State(state.name + offset, new_transitions1, {}));
     }
 
     // Создаем новое начальное состояние, которое переходит в начальные состояния обоих автоматов
     int new_start = new_states.size();
-    new_states.emplace_back(new_start, std::unordered_map<int, int>{
+    std::unordered_map<int, int> emptyTransitions;
+    new_states.emplace_back(new_start, std::multimap<int, int>{
         {-1, A1.start}, 
         {-1, A2.start + offset} // epsilon переход к началу A2
-    });
+    }, emptyTransitions);
+
+    for (State i : new_states) {
+        i.print();
+    }
     
     // Объединяем финальные состояния
     std::unordered_set<int> new_finals = A1.finals; // Копируем финальные состояния первого автомата
@@ -110,89 +79,41 @@ Automaton unionAutomaton(const Automaton& A1, const Automaton& A2) {
         new_finals.insert(final_state + offset); // Переименовываем финальные состояния второго автомата
     }
 
-    // Проверяем и устраняем множественные ε-переходы
-    ensureSingleEpsilonTransition(new_states);
-
     return Automaton(new_states, new_start, new_finals, A1.alphabet, A1.type);
-}
-
-// Функция генерации автомата для атомов (чисел), с добавлением циклов
-Automaton generateAtom(const std::vector<int>& alphabet) {
-    Automaton automaton;
-    do {
-        std::vector<State> states;
-        int numStates = getRandomNumber(1, 10);  // Ограничиваем число состояний
-
-        bool hasCycle = false;
-
-        // Создание состояний и случайных переходов
-        for (int i = 0; i < numStates; ++i) {
-            std::unordered_map<int, int> transitions;
-            int numTransitions = getRandomNumber(1, alphabet.size());
-            
-            for (int j = 0; j < numTransitions; ++j) {
-                int symbol = alphabet[getRandomNumber(0, alphabet.size() - 1)];
-                int nextState = getRandomNumber(0, numStates - 1);
-                transitions[symbol] = nextState;
-
-                // Проверяем, создается ли цикл
-                if (nextState == i) {
-                    hasCycle = true;
-                }
-            }
-
-            states.emplace_back(i, transitions);
-        }
-
-        // Если цикл не был создан случайно, принудительно добавляем хотя бы один цикл
-        if (!hasCycle) {
-            int randomState = getRandomNumber(0, numStates - 1);
-            int randomSymbol = alphabet[getRandomNumber(0, alphabet.size() - 1)];
-            states[randomState].transitions[randomSymbol] = randomState;
-        }
-
-        // Случайное начальное состояние
-        int startState = getRandomNumber(0, numStates - 1);
-        std::unordered_set<int> finalStates;
-
-        // Генерируем случайное количество финальных состояний
-        int numFinalStates = getRandomNumber(1, numStates);
-        for (int i = 0; i < numFinalStates; ++i) {
-            finalStates.insert(getRandomNumber(0, numStates - 1));
-        }
-
-        automaton = Automaton(states, startState, finalStates, alphabet, ATOM);
-    } while (!isValid(automaton));
-
-    return automaton;
 }
 
 // Функция генерации автомата для конкретной лексемы
 Automaton generateLexeme(LexemeType type, const std::vector<int>& alphabet) {
-    Automaton automaton;  // Начальная инициализация
+    Automaton automaton;
     do {
         std::vector<State> states;
         int numStates = getRandomNumber(1, 15);  // Ограничиваем число состояний
 
-        // Создание состояний и случайных переходов
         for (int i = 0; i < numStates; ++i) {
-            std::unordered_map<int, int> transitions;
-            int numTransitions = getRandomNumber(1, alphabet.size());
-            
-            for (int j = 0; j < numTransitions; ++j) {
+            std::multimap<int, int> transitions1;
+            std::set<int> usedSymbols; // Множество для отслеживания использованных символов
+
+            int numtransitions1 = getRandomNumber(1, alphabet.size());
+
+            for (int j = 0; j < numtransitions1; ++j) {
                 int symbol = alphabet[getRandomNumber(0, alphabet.size() - 1)];
-                int nextState = getRandomNumber(0, numStates - 1);
-                transitions[symbol] = nextState;
+
+                if (usedSymbols.find(symbol) == usedSymbols.end()) {
+                    int nextState = getRandomNumber(0, numStates - 1);
+                    transitions1.insert({symbol, nextState});
+                    usedSymbols.insert(symbol); // Добавляем символ в множество использованных
+                } else {
+                    j--;
+                }
             }
 
-            states.emplace_back(i, transitions);
+            std::unordered_map<int, int> emptyTransitions;
+            states.emplace_back(i, transitions1, emptyTransitions);
         }
 
-        // Случайное начальное состояние
         int startState = getRandomNumber(0, numStates - 1);
         std::unordered_set<int> finalStates;
 
-        // Генерируем случайное количество финальных состояний
         int numFinalStates = getRandomNumber(1, numStates);
         for (int i = 0; i < numFinalStates; ++i) {
             finalStates.insert(getRandomNumber(0, numStates - 1));
@@ -212,16 +133,16 @@ Automaton concatenate(const Automaton& A1, const Automaton& A2) {
 
     // Переименовываем состояния второго автомата
     for (const auto& state : A2.states) {
-        std::unordered_map<int, int> new_transitions;
-        for (const auto& transition : state.transitions) {
-            new_transitions[transition.first] = transition.second + state_offset;
+        std::multimap<int, int> new_transitions1;
+        for (const auto& transition : state.transitions1) {
+            new_transitions1.insert({transition.first, transition.second + state_offset});
         }
-        new_states.push_back(State(state.name + state_offset, new_transitions));
+        new_states.push_back(State(state.name + state_offset, new_transitions1, {}));
     }
 
     // Создаем переходы из финальных состояний первого автомата в начальное состояние второго автомата
     for (int final_state : A1.finals) {
-        new_states[final_state].transitions[-1] = A2.start + state_offset;
+        new_states[final_state].transitions1.insert({-1, A2.start + state_offset});
     }
 
     // Финальные состояния нового автомата — это финальные состояния второго автомата с учетом смещения
@@ -229,9 +150,6 @@ Automaton concatenate(const Automaton& A1, const Automaton& A2) {
     for (int final_state : A2.finals) {
         new_finals.insert(final_state + state_offset);
     }
-
-    // Проверяем и устраняем множественные ε-переходы
-    ensureSingleEpsilonTransition(new_states);
 
     // Возвращаем новый автомат
     return Automaton(new_states, A1.start, new_finals, A1.alphabet, A1.type);
@@ -255,21 +173,30 @@ bool hasIntersection(const Automaton& automaton1, const Automaton& automaton2) {
         // Проверка, что оба состояния финальные
         if (automaton1.finals.find(state1) != automaton1.finals.end() &&
             automaton2.finals.find(state2) != automaton2.finals.end()) {
-            return true;  // Intersection found
+            return true;
         }
 
         // Все возможные переходы для каждого символа алфавита
         for (int symbol : automaton1.alphabet) {
-            if (automaton1.states[state1].transitions.count(symbol) &&
-                automaton2.states[state2].transitions.count(symbol)) {
+            if (automaton1.states[state1].transitions1.count(symbol) &&
+                automaton2.states[state2].transitions1.count(symbol)) {
 
-                int nextState1 = automaton1.states[state1].transitions.at(symbol);
-                int nextState2 = automaton2.states[state2].transitions.at(symbol);
+                auto range1 = automaton1.states[state1].transitions1.equal_range(symbol);
+                auto range2 = automaton2.states[state2].transitions1.equal_range(symbol);
 
-                std::pair<int, int> nextPair = {nextState1, nextState2};
-                if (visited.find(nextPair) == visited.end()) {
-                    toVisit.push(nextPair);
-                    visited.insert(nextPair);
+                // Получение всех возможных переходов для current state1 и state2
+                for (auto it1 = range1.first; it1 != range1.second; ++it1) {
+                    int nextState1 = it1->second; // Получаем значение для состояния automaton1
+                    
+                    for (auto it2 = range2.first; it2 != range2.second; ++it2) {
+                        int nextState2 = it2->second; // Получаем значение для состояния automaton2
+
+                        std::pair<int, int> nextPair = {nextState1, nextState2};
+                        if (visited.find(nextPair) == visited.end()) {
+                            toVisit.push(nextPair);
+                            visited.insert(nextPair);
+                        }
+                    }
                 }
             }
         }
@@ -277,12 +204,54 @@ bool hasIntersection(const Automaton& automaton1, const Automaton& automaton2) {
     return false;
 }
 
+// Функция проверки на бесконечный цикл с использованием DFS
+bool hasInfiniteLoop(const Automaton& automaton) {
+    std::unordered_set<int> visited;         // Множество посещенных состояний
+    std::unordered_set<int> recursionStack;  // Стек рекурсии для текущих состояний
+
+    // Вспомогательная функция DFS
+    std::function<bool(int)> dfs = [&](int stateId) {
+        // Если состояние уже в стеке рекурсии, значит мы нашли цикл
+        if (recursionStack.count(stateId) > 0) {
+            return true;
+        }
+        
+        // Если состояние уже посещено, возвращаем false (избегаем повторного обхода)
+        if (visited.count(stateId) > 0) {
+            return false;
+        }
+
+        // Добавляем текущее состояние в посещенные и в стек рекурсии
+        visited.insert(stateId);
+        recursionStack.insert(stateId);
+
+        // Обходим все переходы из текущего состояния
+        auto it = automaton.states[stateId].transitions1.begin();
+        while (it != automaton.states[stateId].transitions1.end()) {
+            int nextState = it->second;
+            if (dfs(nextState)) {
+                return true;
+            }
+            ++it;
+        }
+
+        // Удаляем текущее состояние из стека рекурсии
+        recursionStack.erase(stateId);
+        return false;
+    };
+
+    // Запускаем DFS с начального состояния
+    return dfs(automaton.start);
+}
+
 std::vector<Automaton> generateLexemes() {
-    // Определение алфавита для всех лексем
-    std::vector<int> atomAlphabet = {2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<int> Alphabet = {2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<int> eolAlphabet = {0, 1};
     
-    // Генерация атомов
-    Automaton atomAutomaton = generateAtom(atomAlphabet);
+    Automaton atomAutomaton = generateLexeme(ATOM, Alphabet);
+    while (!hasInfiniteLoop(atomAutomaton)) {
+        atomAutomaton = generateLexeme(ATOM, Alphabet);
+    }
 
     Automaton lbrAutomaton;
     Automaton rbrAutomaton;
@@ -290,8 +259,8 @@ std::vector<Automaton> generateLexemes() {
     // Генерация автоматов для левых и правых скобок
     bool validBrackets = false;
     while (!validBrackets) {
-        lbrAutomaton = generateLexeme(LBR, atomAlphabet);
-        rbrAutomaton = generateLexeme(RBR, atomAlphabet);
+        lbrAutomaton = generateLexeme(LBR, Alphabet);
+        rbrAutomaton = generateLexeme(RBR, Alphabet);
 
         // Проверка на пересечения между скобочными автоматами и атомами
         bool lbrIntersectsAtom = hasIntersection(lbrAutomaton, atomAutomaton);
@@ -333,13 +302,9 @@ std::vector<Automaton> generateLexemes() {
         validBrackets = !lbrIntersectsAtom && !rbrIntersectsAtom && !bracketsIntersect && concatenationValid;
     }
 
-    // Генерация автоматов для точки и конца строки
-    std::vector<int> dotAlphabet = {2, 3, 4, 5, 6, 7, 8, 9};
-    std::vector<int> eolAlphabet = {0, 1};  // Специальный алфавит для eol
-    Automaton dotAutomaton = generateLexeme(DOT, dotAlphabet);
-
+    Automaton dotAutomaton = generateLexeme(DOT, Alphabet);
     while (hasIntersection(dotAutomaton, atomAutomaton)) {
-        dotAutomaton = generateLexeme(DOT, dotAlphabet);
+        dotAutomaton = generateLexeme(DOT, Alphabet);
     }
 
     Automaton eolAutomaton = generateLexeme(EOL, eolAlphabet);
