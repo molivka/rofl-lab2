@@ -75,10 +75,12 @@ public:
         if (minRepeats == 0) {
             int new_start = repeated_automaton.states.size();
             repeated_automaton.states.push_back(State(new_start, {{-1, start}}, {}));
+
             repeated_automaton.finals.insert(new_start);
-            return Automaton(repeated_automaton.states, new_start, finals, alphabet, type);
+
+            return Automaton(repeated_automaton.states, new_start, repeated_automaton.finals, alphabet, type);
         }
-        return Automaton(repeated_automaton.states, start, finals, alphabet, type);
+        return Automaton(repeated_automaton.states, start, repeated_automaton.finals, alphabet, type);
     }
 
     void print() const {
