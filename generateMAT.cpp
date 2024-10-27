@@ -49,47 +49,66 @@ bool isValid(const Automaton& automaton) {
     return true;
 }
 
-Automaton unionAutomaton(const Automaton& automaton1, const Automaton& automaton2) {
+Automaton unionAutomaton(const Automaton& automaton1, const Automaton& automaton2, const Automaton& automaton3) {
     Automaton result = automaton1.clone();
     Automaton second_clone = automaton2.clone();
+    Automaton third_clone = automaton3.clone();
 
-    // Смещаем состояния второго автомата
-    int offset = result.states.size();
+    // Смещаем все состояния второго автомата
+    int offset1 = result.states.size();
     for (auto& state : second_clone.states) {
-        state.name += offset;
+        state.name += offset1;
 
+        // Обновляем переходы в соответствии с новым offset
         std::multimap<int, int> updated_transitions1;
         for (const auto& transition : state.transitions1) {
-            updated_transitions1.insert(std::make_pair(transition.first, transition.second + offset));
+            updated_transitions1.insert(std::make_pair(transition.first, transition.second + offset1));
         }
         state.transitions1 = updated_transitions1;
     }
 
-    int new_start = result.states.size() + second_clone.states.size();
-    State start_state(new_start, {}, {});
-    
-    // Добавляем эпсилон-переходы от нового начального состояния к начальным состояниям обоих автоматов
-    start_state.transitions1.insert(std::make_pair(-1, result.start));
-    start_state.transitions1.insert(std::make_pair(-1, second_clone.start + offset));
+    int offset2 = result.states.size() + second_clone.states.size();
+    for (auto& state : third_clone.states) {
+        state.name += offset2;
 
-    // Обновляем начальное состояние и добавляем новое состояние к результату
+        std::multimap<int, int> updated_transitions2;
+        for (const auto& transition : state.transitions1) {
+            updated_transitions2.insert(std::make_pair(transition.first, transition.second + offset2));
+        }
+        state.transitions1 = updated_transitions2;
+    }
+
+    int new_start = result.states.size() + second_clone.states.size() + third_clone.states.size();
+    State start_state(new_start, {}, {});
+
+    start_state.transitions1.insert(std::make_pair(-1, result.start));
+    start_state.transitions1.insert(std::make_pair(-1, second_clone.start + offset1));
+    start_state.transitions1.insert(std::make_pair(-1, third_clone.start + offset2));
+
+
     result.start = new_start;
     result.states.push_back(start_state);
 
-    // Добавляем состояния второго автомата к результату
     result.states.insert(result.states.end(), second_clone.states.begin(), second_clone.states.end());
 
-    // Обновляем финальные состояния
+    result.states.insert(result.states.end(), third_clone.states.begin(), third_clone.states.end());
+
+    // Обновляем финальные состояния, добавляя все финальные состояния второго и третьего автоматов с учетом смещения
     for (int final_state : second_clone.finals) {
-        result.finals.insert(final_state + offset);
+        result.finals.insert(final_state + offset1);
+    }
+    for (int final_state : third_clone.finals) {
+        result.finals.insert(final_state + offset2);
     }
     result.finals.insert(automaton1.finals.begin(), automaton1.finals.end());
 
+    // Объединяем алфавит всех трех автоматов
     std::unordered_set<int> unique_alphabet(result.alphabet.begin(), result.alphabet.end());
     unique_alphabet.insert(second_clone.alphabet.begin(), second_clone.alphabet.end());
+    unique_alphabet.insert(third_clone.alphabet.begin(), third_clone.alphabet.end());
     result.alphabet.assign(unique_alphabet.begin(), unique_alphabet.end());
 
-    return result;
+    return result; // Возвращаем объединенный автомат
 }
 
 Automaton concatenate(const Automaton& automaton1, const Automaton& automaton2) {
@@ -215,7 +234,7 @@ Automaton generateLexeme(LexemeType type, const std::vector<int>& alphabet) {
     Automaton automaton;
     do {
         std::vector<State> states;
-        int numStates = getRandomNumber(1, 15);  // Ограничиваем число состояний
+        int numStates = getRandomNumber(1, 3);  // Ограничиваем число состояний
 
         for (int i = 0; i < numStates; ++i) {
             std::multimap<int, int> transitions1;
@@ -330,7 +349,7 @@ std::vector<Automaton> generateLexemes() {
 }
 
 
-int maxDepth = 4; // Максимальная глубина вложенности скобок
+int maxDepth = 3; // Максимальная глубина вложенности скобок
 Automaton genExpr(int depth);
 Automaton genEolStarExprEolStar(int depth);
 
@@ -344,7 +363,7 @@ Automaton genEolStarExprEolStar(int depth) {
 // Функция для построения автомата списка: [list] ::= [lbr] [expression]+ [rbr]
 Automaton genList(int depth) {
     Automaton lbr = automatons[LBR];
-    Automaton exprPlus = genEolStarExprEolStar(depth + 1).repeat(1);
+    Automaton exprPlus = (genEolStarExprEolStar(depth + 1)).repeat(1);
     Automaton rbr = automatons[RBR];
     return concatenate(concatenate(lbr, exprPlus), rbr);
 }
@@ -367,10 +386,7 @@ Automaton genExpr(int depth) {
 
     lexemList.push_back(genList(depth + 1));
 
-    Automaton result = lexemList[0];
-    for (size_t i = 1; i < lexemList.size(); ++i) {
-        result = unionAutomaton(result, lexemList[i]);
-    }
+    Automaton result = unionAutomaton(lexemList[0], lexemList[1], lexemList[2]);
     return result;
 }
 
@@ -392,4 +408,33 @@ Automaton generateMAT() {
     Automaton result = genProgramm();
 
     return result;
+}
+
+// Функция для поиска строки из языка атомов
+std::string generateAnyNonEmptyStringFromAtom(const Automaton& atomAutomaton) {
+    std::stack<std::pair<int, std::string>> stack;
+    stack.push({atomAutomaton.start, ""});
+
+    while (!stack.empty()) {
+        auto current = stack.top();
+        stack.pop();
+
+        int currentState = current.first;
+        std::string currentString = current.second;
+
+        for (const auto& transition : atomAutomaton.states[currentState].transitions1) {
+            int nextState = transition.second;
+            int symbol = transition.first;
+
+            std::string nextString = currentString + std::to_string(symbol);
+
+            stack.push({nextState, nextString});
+
+            if (atomAutomaton.finals.count(nextState) > 0 && !nextString.empty()) {
+                return nextString;
+            }
+        }
+    }
+
+    return "";
 }
