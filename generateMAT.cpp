@@ -230,27 +230,43 @@ bool hasInfiniteLoop(const Automaton& automaton) {
 }
 
 // Функция генерации автомата для конкретной лексемы
-Automaton generateLexeme(LexemeType type, const std::vector<int>& alphabet) {
+Automaton generateLexeme(LexemeType type, const std::vector<int>& alphabet, bool acyclic) {
     Automaton automaton;
+
     do {
         std::vector<State> states;
-        int numStates = getRandomNumber(1, 3);  // Ограничиваем число состояний
+        int numStates = getRandomNumber(3, 8);
 
         for (int i = 0; i < numStates; ++i) {
             std::multimap<int, int> transitions1;
-            std::set<int> usedSymbols; // Множество для отслеживания использованных символов
+            std::set<int> usedSymbols;
 
-            int numtransitions1 = getRandomNumber(1, alphabet.size());
+            int numTransitions1 = getRandomNumber(1, alphabet.size());
 
-            for (int j = 0; j < numtransitions1; ++j) {
+            for (int j = 0; j < numTransitions1; ++j) {
                 int symbol = alphabet[getRandomNumber(0, alphabet.size() - 1)];
+                int nextState;
+                bool validNextState = false;
 
-                if (usedSymbols.find(symbol) == usedSymbols.end()) {
-                    int nextState = getRandomNumber(0, numStates - 1);
-                    transitions1.insert({symbol, nextState});
-                    usedSymbols.insert(symbol); // Добавляем символ в множество использованных
+                if (acyclic) {
+                    for (int attempts = 0; attempts < numStates; ++attempts) {
+                        nextState = getRandomNumber(0, numStates - 1);
+
+                        // Проверяем, что nextState меньше iи символ еще не использовался
+                        if (nextState < i && usedSymbols.find(symbol) == usedSymbols.end()) {
+                            validNextState = true;
+                            break;
+                        }
+                    }
                 } else {
-                    j--;
+                    // Выбираем nextState случайным образом без ограничений
+                    nextState = getRandomNumber(0, numStates - 1);
+                    validNextState = true;
+                }
+
+                if (validNextState) {
+                    transitions1.insert({symbol, nextState});
+                    usedSymbols.insert(symbol);
                 }
             }
 
@@ -278,15 +294,15 @@ std::vector<Automaton> generateLexemes() {
     std::vector<int> Alphabet;
 
     std::shuffle(commonAlphabet.begin(), commonAlphabet.end(), generator);
-    std::uniform_int_distribution<int> dist(2, 3);
+    std::uniform_int_distribution<int> dist(2, 4);
     int eolSize = dist(generator);
 
     eolAlphabet.assign(commonAlphabet.begin(), commonAlphabet.begin() + eolSize);
     Alphabet.assign(commonAlphabet.begin() + eolSize, commonAlphabet.end());
     
-    Automaton atomAutomaton = generateLexeme(ATOM, Alphabet);
+    Automaton atomAutomaton = generateLexeme(ATOM, Alphabet, false);
     while (!hasInfiniteLoop(atomAutomaton)) {
-        atomAutomaton = generateLexeme(ATOM, Alphabet);
+        atomAutomaton = generateLexeme(ATOM, Alphabet, false);
     }
 
     Automaton lbrAutomaton;
@@ -295,8 +311,8 @@ std::vector<Automaton> generateLexemes() {
     // Генерация автоматов для левых и правых скобок
     bool validBrackets = false;
     while (!validBrackets) {
-        lbrAutomaton = generateLexeme(LBR, Alphabet);
-        rbrAutomaton = generateLexeme(RBR, Alphabet);
+        lbrAutomaton = generateLexeme(LBR, Alphabet, true);
+        rbrAutomaton = generateLexeme(RBR, Alphabet, true);
 
         // Проверка на пересечения между скобочными автоматами и атомами
         bool lbrIntersectsAtom = hasIntersection(lbrAutomaton, atomAutomaton);
@@ -338,12 +354,12 @@ std::vector<Automaton> generateLexemes() {
         validBrackets = !lbrIntersectsAtom && !rbrIntersectsAtom && !bracketsIntersect && concatenationValid;
     }
 
-    Automaton dotAutomaton = generateLexeme(DOT, Alphabet);
+    Automaton dotAutomaton = generateLexeme(DOT, Alphabet, true);
     while (hasIntersection(dotAutomaton, atomAutomaton)) {
-        dotAutomaton = generateLexeme(DOT, Alphabet);
+        dotAutomaton = generateLexeme(DOT, Alphabet, true);
     }
 
-    Automaton eolAutomaton = generateLexeme(EOL, eolAlphabet);
+    Automaton eolAutomaton = generateLexeme(EOL, eolAlphabet, true);
 
     return {eolAutomaton, atomAutomaton, lbrAutomaton, rbrAutomaton, dotAutomaton};
 }
@@ -374,19 +390,19 @@ Automaton genExpr(int depth) {
         return automatons[ATOM].clone();
     }
 
-    std::vector<Automaton> lexemList;
-    lexemList.push_back(automatons[ATOM].clone());
+    std::vector<Automaton> exprCreator;
+    exprCreator.push_back(automatons[ATOM].clone());
 
     // Создаем автомат для [lbr][expression][dot][expression][rbr]
     Automaton complexExprAutomaton = concatenate(concatenate(concatenate(concatenate(automatons[LBR].clone(),
     genEolStarExprEolStar(depth + 1)), 
     automatons[DOT].clone()), genEolStarExprEolStar(depth + 1)), 
     automatons[RBR].clone());
-    lexemList.push_back(complexExprAutomaton);
+    exprCreator.push_back(complexExprAutomaton);
 
-    lexemList.push_back(genList(depth + 1));
+    exprCreator.push_back(genList(depth + 1));
 
-    Automaton result = unionAutomaton(lexemList[0], lexemList[1], lexemList[2]);
+    Automaton result = unionAutomaton(exprCreator[0], exprCreator[1], exprCreator[2]);
     return result;
 }
 
