@@ -235,43 +235,42 @@ Automaton generateLexeme(LexemeType type, const std::vector<int>& alphabet, bool
 
     do {
         std::vector<State> states;
-        int numStates = getRandomNumber(3, 8);
+        int numStates = getRandomNumber(2, 3);
 
         for (int i = 0; i < numStates; ++i) {
-            std::multimap<int, int> transitions1;
+            std::multimap<int, int> transitions;
             std::set<int> usedSymbols;
 
-            int numTransitions1 = getRandomNumber(1, alphabet.size());
+            int numTransitions = getRandomNumber(1, alphabet.size());
 
-            for (int j = 0; j < numTransitions1; ++j) {
+            for (int j = 0; j < numTransitions; ++j) {
                 int symbol = alphabet[getRandomNumber(0, alphabet.size() - 1)];
                 int nextState;
                 bool validNextState = false;
 
-                if (acyclic) {
-                    for (int attempts = 0; attempts < numStates; ++attempts) {
-                        nextState = getRandomNumber(0, numStates - 1);
-
-                        // Проверяем, что nextState меньше iи символ еще не использовался
-                        if (nextState < i && usedSymbols.find(symbol) == usedSymbols.end()) {
-                            validNextState = true;
-                            break;
+                if (usedSymbols.find(symbol) == usedSymbols.end()) {
+                    if (acyclic) {
+                        for (int h = 0; h < numStates; ++h) {
+                            nextState = getRandomNumber(0, numStates - 1);
+                            if (nextState < i) {
+                                validNextState = true;
+                                break;
+                            }
                         }
+                    } else {
+                        nextState = getRandomNumber(0, numStates - 1);
+                        validNextState = true;
                     }
-                } else {
-                    // Выбираем nextState случайным образом без ограничений
-                    nextState = getRandomNumber(0, numStates - 1);
-                    validNextState = true;
-                }
 
-                if (validNextState) {
-                    transitions1.insert({symbol, nextState});
-                    usedSymbols.insert(symbol);
+                    if (validNextState) {
+                        transitions.insert({symbol, nextState});
+                        usedSymbols.insert(symbol);
+                    }
                 }
             }
 
             std::unordered_map<int, int> emptyTransitions;
-            states.emplace_back(i, transitions1, emptyTransitions);
+            states.emplace_back(i, transitions, emptyTransitions);
         }
 
         int startState = getRandomNumber(0, numStates - 1);
@@ -279,7 +278,11 @@ Automaton generateLexeme(LexemeType type, const std::vector<int>& alphabet, bool
 
         int numFinalStates = getRandomNumber(1, numStates);
         for (int i = 0; i < numFinalStates; ++i) {
-            finalStates.insert(getRandomNumber(0, numStates - 1));
+            int new_final = getRandomNumber(0, numStates - 1);
+            if (numFinalStates == 1 && new_final == startState) {
+                i--;
+            }
+            finalStates.insert(new_final);
         }
 
         automaton = Automaton(states, startState, finalStates, alphabet, type);
