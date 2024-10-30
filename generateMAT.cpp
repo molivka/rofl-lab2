@@ -235,7 +235,7 @@ Automaton generateLexeme(LexemeType type, const std::vector<int>& alphabet, bool
 
     do {
         std::vector<State> states;
-        int numStates = getRandomNumber(2, 3);
+        int numStates = getRandomNumber(3, 10);
 
         for (int i = 0; i < numStates; ++i) {
             std::multimap<int, int> transitions;
@@ -427,33 +427,4 @@ Automaton generateMAT() {
     Automaton result = genProgramm();
 
     return result;
-}
-
-// Функция для поиска строки из языка атомов
-std::string generateAnyNonEmptyStringFromAtom(const Automaton& atomAutomaton) {
-    std::stack<std::pair<int, std::string>> stack;
-    stack.push({atomAutomaton.start, ""});
-
-    while (!stack.empty()) {
-        auto current = stack.top();
-        stack.pop();
-
-        int currentState = current.first;
-        std::string currentString = current.second;
-
-        for (const auto& transition : atomAutomaton.states[currentState].transitions1) {
-            int nextState = transition.second;
-            int symbol = transition.first;
-
-            std::string nextString = currentString + std::to_string(symbol);
-
-            stack.push({nextState, nextString});
-
-            if (atomAutomaton.finals.count(nextState) > 0 && !nextString.empty()) {
-                return nextString;
-            }
-        }
-    }
-
-    return "";
 }
