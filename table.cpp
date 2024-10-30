@@ -18,11 +18,28 @@ vector<string> alpha = {"0", "1"};
 
 set<string> statuses;
 set<string> in;
+int poln = 0;
 
 
 int check(string w){
     // делаем запрос мату
     return 1;
+}
+
+string equivalence(){
+    // проверка на эквивалентность
+    string status = "help";  // снова тест, но help это прям мне нужна!!!
+    vector<string> to_mat;
+    for (auto i: S){
+        string word = i.second;
+        to_mat.push_back(word);
+    }
+    // cout << "we are push it to mat!!!" << endl;
+    for (string i: to_mat){
+        cout << i << endl;
+    }
+
+    return status;
 }
 
 string concat(string a, string b){
@@ -122,8 +139,25 @@ void print(){
     }
 }
 
+void fill_table(){
+    while (!poln){
+        build(); // достариваем таблицу
+        proverka(); // проверяем каждый статус
+        poln = polnota(); // проверяем на полноту
+        print();
+    }
+}
+
+void add_to_suf(string w){
+    string w_rev = ""; //чтобы не было O(n^2)
+    for (int i = w.size() - 1; i >= 0; --i){
+        w_rev = w[i] + w_rev;
+        E[E.size()] = w_rev;
+    }
+}
+
 int main(){
-    int poln = 0;
+    int win = 0;
     S[0] = "e";
     E[0] = "e"; // e - пустое слово
 
@@ -135,12 +169,20 @@ int main(){
     // проверяем каждое слово
     // проверяем на полноту, то есть нужно ли добавить ещё строки
     // если полнота = 1, то делаем запрос к мату, иначе всё по новой
-    while (!poln){
-        build(); // достариваем таблицу
-        proverka(); // проверяем каждый статус
-        poln = polnota(); // проверяем на полноту
-        print();
+    while (!win){
+        fill_table();
+        string w = equivalence();
+        if (w == "ok"){
+            win = 1;
+        }
+        else{
+            add_to_suf(w);
+            print();
+            win = 1; // снова заглушка
+        }
     }
+
+
     return 0;
 }
 
