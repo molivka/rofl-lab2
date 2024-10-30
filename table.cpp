@@ -19,7 +19,7 @@ vector<string> alpha = {"0", "1"};
 set<string> statuses;
 set<string> in;
 int poln = 0;
-
+int neprot = 0;
 
 int check(string w){
     // делаем запрос мату
@@ -85,14 +85,24 @@ void build(){
     }
 }
 
+string get_status(int ind){
+    string row = "";
+    for (int j = 0; j < E.size(); ++j){
+        row = row + to_string(table[{ind, j}]); // копим статусы по строке
+    }
+    return row;
+}
+
 int polnota(){
     int is_poln = 1; // полна ли таблица на этой итерации
     set<string> pol; // строки-статусы, которые отражают принадлежность
     for (int i = 0; i < S.size(); ++i){
         string row = ""; // строка со статусами
-        for (int j = 0; j < E.size(); ++j){
+        for (int j = 0; j < E.size(); ++j){// надо бы заменить на функцию
             row = row + to_string(table[{i, j}]); // накапливаем статусы строки 
         }
+        // string row2 = get_status(i);
+        // cout << "NORM???? " << row << ' ' << row2 << endl;
         if (is_main[i] == 1){ // если это основная часть, то чекать не нужно
             // cout << "not main: " << i << endl;
             pol.insert(row);
@@ -108,6 +118,35 @@ int polnota(){
         }
     }
     return is_poln;
+}
+
+int neprotivor(){
+    int is_neprot = 1;
+    for (int i = 0; i < S.size(); ++i){
+        if (!is_main[i]){
+            continue; // cкипаем слово, если оно не в основной части
+        }
+        for (int j = i + i; j < S.size(); ++j){
+            if (!is_main[j]){
+                continue; // cкипаем слово, если оно не в основной части
+            }
+            string status_1 = get_status(i);
+            string status_2 = get_status(j);
+            if (status_1 == status_2){ // если строчки одинаковые, то есть на всех суффиксах эти префиксы ведут себя одинаково
+                for (int k = 0; k < E.size(); ++k){
+                    for (string al: alpha){
+                        int f1 = check((S[i] + al + E[k]));
+                        int f2 = check((S[j] + al + E[k]));
+                        if (f1 != f2){
+                            add_to_suf((al + E[k]));
+                            is_neprot = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return is_neprot;
 }
 
 void print(){
@@ -140,11 +179,14 @@ void print(){
 }
 
 void fill_table(){
-    while (!poln){
-        build(); // достариваем таблицу
-        proverka(); // проверяем каждый статус
-        poln = polnota(); // проверяем на полноту
-        print();
+    while (!neprot){
+        while (!poln){
+            build(); // достариваем таблицу
+            proverka(); // проверяем каждый статус
+            poln = polnota(); // проверяем на полноту
+            print();
+        }
+        neprot = neprotivor();
     }
 }
 
@@ -171,6 +213,7 @@ int main(){
     // если полнота = 1, то делаем запрос к мату, иначе всё по новой
     while (!win){
         fill_table();
+
         string w = equivalence();
         if (w == "ok"){
             win = 1;
