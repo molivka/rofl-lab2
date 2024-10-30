@@ -16,6 +16,7 @@
 #include <utility>
 #include <functional>
 #include <memory>
+#include <random>
 
 enum LexemeType { EOL, ATOM, LBR, RBR, DOT };
 
@@ -60,12 +61,10 @@ public:
     Automaton() {
     }
 
-    // Метод для клонирования автомата
     Automaton clone() const {
         return Automaton(states, start, finals, alphabet, type);
     }
 
-    // Метод для повторения автомата
     Automaton repeat(int minRepeats = 0) const {
         Automaton repeated_automaton = clone();
 
@@ -76,23 +75,28 @@ public:
         if (minRepeats == 0) {
             int new_start = repeated_automaton.states.size();
             repeated_automaton.states.push_back(State(new_start, {{-1, start}}, {}));
-            return Automaton(repeated_automaton.states, new_start, finals, alphabet, type);
-        }
 
-        return repeated_automaton;
+            repeated_automaton.finals.insert(new_start);
+
+            return Automaton(repeated_automaton.states, new_start, repeated_automaton.finals, alphabet, type);
+        }
+        return Automaton(repeated_automaton.states, start, repeated_automaton.finals, alphabet, type);
     }
 
     void print() const {
+        std::cout << "Lexeme type: " << type << "\n";
+        std::cout << "Start state: " << start << "\n";
+        std::cout << "\nStates and transitions1:\n";
+        for (const auto& state : states) {
+            state.print();
+        }
         std::cout << "Lexeme type: " << type << "\n";
         std::cout << "Start state: " << start << "\n";
         std::cout << "Final states: ";
         for (const auto& fin : finals) {
             std::cout << fin << " ";
         }
-        std::cout << "\nStates and transitions1:\n";
-        for (const auto& state : states) {
-            state.print();
-        }
+        std::cout << "\n";
     }
 };
 
