@@ -8,7 +8,7 @@
 using namespace std;
 int main() {
     srand(time(0)); //необходимо для корректной работы рандома
-
+    /*
     State q0(0, {}, {{0, 1}, {1, 0}});
     State q1(1,{}, {{0, 0}, {5, 2}});
     State q2(2,{}, {{8, 2}, {1, 2}});
@@ -70,12 +70,13 @@ int main() {
     }
     
     Visualize(automaton3);
-    
+    */
     // Генерация автомата
 
-    //Automaton result = generateMAT();
-    //result.print();
-    //Visualize(result);
+    Automaton result = generateMAT();
+    removeEpsilonTransitions(result); 
+    result = determinize(result);
+    Visualize(result);
     
     return 0;
 }
