@@ -14,11 +14,50 @@ map<int, string> E; // столбцы таблицы = различающие с
 map<pair<int, int>, int> table; // таблица входимости
 map<int, int> is_main; // хранит флаг принадлежности к основной части, 1 - основная часть, 0 - доп часть
 
-vector<string> alphabet = {"0", "1"}; // алфавит языка
+vector<string> alphabet = {"a", "b"}; // алфавит языка
 
 set<string> all_clases; // набор всех слов-классов
 int closed = 0; // является ли таблица полной
 int consist = 0; // является ли таблица непротиворечивой
+
+map<string, int> testing_check;
+map<string, string> testing_equivalence;
+
+void build_testing(){
+    // todo написать регулярку
+}
+
+// хардкодинг тестов
+int MAT_check(string w){
+    int cnt_a = 0;
+    int cnt_b = 0;
+    for (char x: w){
+        if (x == 'a'){
+            cnt_a += 1;
+        }
+        if (x == 'b'){
+            cnt_b += 1;
+        }
+    }
+    if ((cnt_a % 2 == 0) && (cnt_b == 1)){
+        return 1;
+    }
+    return 0;
+}
+
+// хардкодинг эквивалентности
+string MAT_equivalence(vector<string> v){
+    vector<string> correct = {"e", "a", "b", "ba", "bb"};
+    sort(correct.begin(), correct.end());
+    sort(v.begin(), v.end());
+    string ok = "ok";
+    for (int i = 0; i < v.size(); ++i){
+        if (v[i] != correct[i]){
+            return "aba";
+        }
+    }
+    return ok;
+}
 
 // вывод основных сущностей
 void print(){
@@ -52,18 +91,20 @@ void print(){
 
 // запрос к мату на принадлежность
 int check(string w){
-    return 1;
+    int ans = MAT_check(w);
+    return ans;
 }
 
 // запрос к мату на эквивалентность
 string equivalence(){
     string status = "ok";
-    status = "help";  // снова тест, но help это прям мне нужна!!!
+    // status = "help";  // снова тест, но help это прям мне нужна!!!
     vector<string> to_mat; // классы эквивалентности, которые отправляем мату 
     for (auto i: S){
         string word = i.second;
         to_mat.push_back(word);
     }
+    status = MAT_equivalence(to_mat);
     // cout << "we are push it to mat!!!" << endl;
     // for (string i: to_mat){
     //     cout << i << endl;
