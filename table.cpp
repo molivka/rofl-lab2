@@ -8,12 +8,8 @@ using namespace std;
 
 #define endl '\n'
 
-int n; // кол-во строк в основной таблице
-int n_dop; // кол-вл строк в доп таблице
-int m; // кол-о столбцов
 
 map<int, string> S; // основная часть таблицы
-map<int, string> S_dop; // дополнительная часть таблицы
 map<int, string> E; // столбцы таблицы = суффиксы
 map<pair<int, int>, int> table; // таблица принадлежностей 
 map<int, int> is_main; // хранит флаг принадлежности к основной части, 0 - доп, 1 - основная
@@ -47,13 +43,12 @@ void proverka(){
             int f = check(new_str); // проверка принадлежности слова
             table[{i, j}] = f; // записали принадлежит ли слово S[i] + E[j] языку
         }
-        cout << endl;
     }
 }
 
 void build(){
     // строим дополнительную часть
-    n = S.size(); // тк в процесса изменяется
+    int n = S.size(); // тк в процесса изменяется
     for (int i = 0; i < n; ++i){
         for (int j = 0; j < alpha.size(); ++j){
             if (is_main[i] != 1){
@@ -99,61 +94,53 @@ int polnota(){
 }
 
 void print(){
-    cout << "prefixs " << endl;
+    cout << "pref: " << endl;
     for (int i = 0; i < S.size(); ++i){
         cout << S[i] << ' ';
     }
     cout << endl;
-    cout << "suffs " << endl;
+    cout << "suff: " << endl;
     for (int i = 0; i < E.size(); ++i){
         cout << E[i] << ' ';
     }
     cout << endl;
-    cout << "table " << endl;
+    cout << "table: " << endl;
     for (int i = 0; i < S.size(); ++i){
         for (int j = 0; j < E.size(); ++j){
             cout << table[{i, j}] << ' ';
         }
         cout << endl;
     }
-    cout << "words in table " << endl;
+    cout << "words in both parts of table: " << endl;
     for (auto i: in){
         cout << i << ' ';
     }
     cout << endl;
-    cout << "is_main for strings " << endl;
+    cout << "words in main part: " << endl;
     for (int i = 0; i < S.size(); ++i){
-        cout << is_main[i] << ' ';
+        cout << "word: " << S[i] << " status: " << is_main[i] << endl;
     }
-    cout << endl;
 }
 
 int main(){
+    int poln = 0;
     S[0] = "e";
     E[0] = "e"; // e - пустое слово
-    // n = 1; 
-    // m = 1;
+
     in.insert("e");
-    is_main[0] = 1; // мб сразу 1? ЭТО НЕПРАВДА, ПУСТОЕ СЛОВО ЖЕ НЕ ВСЕГДА ПРИНАДЛЕЖИТ ЯЗЫКУ
-    build(); // строим доп часть
-    proverka(); // записываем статусы
-    // is_main[1] = 1;// тестовая штука, потом убрать
-    int is_poln = polnota(); // полна ли таблица
-    print();
-    // cout << "is_poln? " << is_poln << endl;
+    is_main[0] = 1; // сразу ставим 1, тк изначально что-то говорим про пустое слово
 
-    build();
-    proverka();
-    is_poln = polnota();
-    print();
-
-    // is_main[3] = 1; // снова тест 
-    
-    build();
-    proverka();
-    is_poln = polnota();
-    print();
-
+    // как делаем?
+    // строим дополнительную часть
+    // проверяем каждое слово
+    // проверяем на полноту, то есть нужно ли добавить ещё строки
+    // если полнота = 1, то делаем запрос к мату, иначе всё по новой
+    while (!poln){
+        build(); // достариваем таблицу
+        proverka(); // проверяем каждый статус
+        poln = polnota(); // проверяем на полноту
+        print();
+    }
     return 0;
 }
 
