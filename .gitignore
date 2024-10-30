@@ -9,8 +9,10 @@
 *.toc
 *.vrb
 .Rhistory
+*.vscode
 .DS_Store
 *.ipynb_checkpoints
+tempCodeRunnerFile.cpp
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
