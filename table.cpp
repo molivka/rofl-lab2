@@ -39,51 +39,57 @@ string concat(string a, string b){
     return a + b;
 }
 
-void proverka(){//заменить на итератор
+void proverka(){
     for (int i = 0; i < S.size(); ++i){
         for (int j = 0; j < E.size(); ++j){
             string new_str = concat(S[i], E[j]);
-            in.insert(new_str);
+            // cout << "s: " << S[i] << " E " << E[j] << " new str " << new_str << ' ';
             int f = check(new_str); // проверка принадлежности слова
             table[{i, j}] = f; // записали принадлежит ли слово S[i] + E[j] языку
         }
+        cout << endl;
     }
 }
 
 void build(){
     // строим дополнительную часть
-    n = S.size();
+    n = S.size(); // тк в процесса изменяется
     for (int i = 0; i < n; ++i){
         for (int j = 0; j < alpha.size(); ++j){
             if (is_main[i] != 1){
-                continue; // если строка не в главной части - скип
+                continue; // если слово не в главной части - скип
             }
             string new_str = concat(S[i], alpha[j]);
+            // cout << "s: " << S[i] << " alpha " << alpha[j] << " new str " << new_str << ' ';
             if (in.find(new_str) != in.end()){ // если мы получали уже это слово
                 continue;
             }
-            // а с индексами точно всё норм?
-            S[n + 3 * i + j] = new_str; // получили новое слово путём конкатенации
-            is_main[n + 3 * i + j] = 0; // нужно, тк в мапе не было до этого значений
-            in.insert(new_str);
+            // cout << "in " << S.size() << " add " << new_str;
+            S[S.size()] = new_str; // получили новое слово путём конкатенации
+            is_main[S.size()] = 0; // нужно, тк в мапе не было до этого значений
+            in.insert(new_str); // тк сет, то пофиг, но это действительно новое слово
+            // cout << endl;
         }
     }
 }
 
 int polnota(){
     int is_poln = 1; // полна ли таблица на этой итерации
-    set<string> pol;
-    for (int i = 0; i < n; ++i){
-        string row = "";
-        for (int j = 0; j < n; ++j){
+    set<string> pol; // строки-статусы, которые отражают принадлежность
+    for (int i = 0; i < S.size(); ++i){
+        string row = ""; // строка со статусами
+        for (int j = 0; j < E.size(); ++j){
             row = row + to_string(table[{i, j}]); // накапливаем статусы строки 
         }
-        if (is_main[i] == 1){ // если это осоновная часть, то просто сохраняем принадлежности слова
+        if (is_main[i] == 1){ // если это основная часть, то чекать не нужно
+            // cout << "not main: " << i << endl;
             pol.insert(row);
         }  
         else{
-            if (pol.find(row) == pol.end()){ // то есть в доп части есть новая строка
+            // row = "0"; // test again
+            if (pol.find(row) == pol.end()){ // если в доп части есть новая строка - сохраняем
                 is_poln = 0; // обновили таблицу => она не была полной
+                // cout << "add in main: " << i << endl;
                 pol.insert(row);
                 is_main[i] = 1; // переносим её в основную
             }
@@ -125,13 +131,13 @@ void print(){
 int main(){
     S[0] = "e";
     E[0] = "e"; // e - пустое слово
-    n = 1; 
-    m = 1;
+    // n = 1; 
+    // m = 1;
     in.insert("e");
-    is_main[0] = 1; // мб сразу 1?
+    is_main[0] = 1; // мб сразу 1? ЭТО НЕПРАВДА, ПУСТОЕ СЛОВО ЖЕ НЕ ВСЕГДА ПРИНАДЛЕЖИТ ЯЗЫКУ
     build(); // строим доп часть
     proverka(); // записываем статусы
-    is_main[1] = 1;// тестовая штука, потом убрать
+    // is_main[1] = 1;// тестовая штука, потом убрать
     int is_poln = polnota(); // полна ли таблица
     print();
     // cout << "is_poln? " << is_poln << endl;
@@ -140,11 +146,13 @@ int main(){
     proverka();
     is_poln = polnota();
     print();
-    // cout << "is_poln? " << is_poln << endl;
+
+    // is_main[3] = 1; // снова тест 
     
     build();
     proverka();
     is_poln = polnota();
+    print();
 
     return 0;
 }
