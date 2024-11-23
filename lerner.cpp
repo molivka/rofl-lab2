@@ -3,8 +3,6 @@
 #include <map>
 #include <string>
 #include <set>
-#include <regex>
-#include "test-from-sem.h"
 #include "MAT-interface.h"
 
 using namespace std;
@@ -15,9 +13,12 @@ using namespace std;
 map<int, string> S; // строки таблицы = классы эквивалентности
 map<int, string> E; // столбцы таблицы = различающие суффиксы 
 map<pair<int, int>, int> table; // таблица входимости
+map<string, int> string_in;
 map<int, int> is_main; // хранит флаг принадлежности к основной части, 1 - основная часть, 0 - доп часть
 
-vector<string> alphabet = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; // алфавит языка
+// vector<string> alphabet = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; // алфавит языка
+
+vector<string> alphabet = {"a", "b"};
 
 set<string> all_clases; // набор всех слов-классов
 int closed = 0; // является ли таблица полной
@@ -47,46 +48,15 @@ void print(){
 
 // запрос к мату на принадлежность
 int check(string w){
-    int ans;
-    if (test_case){
-        ans = MAT_check_test(w);
-    }
-    else{
-        ans = MAT_check(w);
-    }
+    int ans = MAT_check(w);
 
     return ans;
 }
 
 // запрос к мату на эквивалентность
 string equivalence(){
-    string status;
-    vector<string> to_mat; // классы эквивалентности, которые отправляем мату 
-    for (auto i: S){
-        string word = i.second;
-        to_mat.push_back(word);
-    }
-    if (test_case){
-        status = MAT_equivalence_test(to_mat);
-    }
-    else{
-        vector<string> main_prefixes, non_main_prefixes, suffixes;
-        vector<int> table_for_mat;
-        for (int i = 0; i < S.size(); ++i){
-            if (is_main[i]){
-                main_prefixes.push_back(S[i]);
-            }
-            else{
-                non_main_prefixes.push_back(S[i]);
-            }
-            table_for_mat.push_back(table[{i, 0}]);
-        }
-        for (int i = 0; i < E.size(); ++i){
-            suffixes.push_back(E[i]);
-        }
-        status = MAT_equivalence_test(main_prefixes, non_main_prefixes, suffixes, table_for_mat);
-    }
-    return status;
+    string answer = MAT_equivalence(S, E, table);
+    return answer;
 }
 
 // учитываем пустую строчку при конкатенации
@@ -125,7 +95,14 @@ void all_check(){
     for (int i = 0; i < S.size(); ++i){
         for (int j = 0; j < E.size(); ++j){
             string new_str = concat(S[i], E[j]);
-            int f = check(new_str); // проверка принадлежности слова
+            int f;// проверка принадлежности слова
+            if (string_in.find(new_str) != string_in.end()){
+                f = string_in[new_str];
+            }
+            else{
+                f = check(new_str);
+                string_in[new_str] = f;
+            }
             table[{i, j}] = f; // записали принадлежит ли слово S[i] + E[j] языку
         }
     }
@@ -203,12 +180,13 @@ int consistent(){
 
 // доведение таблицы до состояния, когда можно делать запрос мату
 void fill_table(){
+    consist = 0;
+    closed = 0;
     while (!consist){
         while (!closed){
             build(); // достариваем таблицу, всё ок, тк при исполнении polnota() мы добавили новую строку
             all_check(); // проверяем каждый статус
             closed = fullness(); // проверяем на полноту
-            print();
         }
         consist = consistent(); // проверка на противоречивость
     }
@@ -231,7 +209,7 @@ int main(int argc, char* argv[]){
     while (!win){
         fill_table();
         string w = equivalence();
-        if (w == "ok"){
+        if (w == "TRUE"){
             win = 1;
         }
         else{
