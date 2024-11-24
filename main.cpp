@@ -4,6 +4,8 @@
 #include "Visualisation.cpp"
 #include "CanonNum.cpp"
 #include "removeEpsilon.cpp"
+#include "min.cpp"
+#include "equal.cpp"
 #include "transform.cpp"
 #include <chrono>
 #include <thread>
@@ -84,7 +86,7 @@ void chating(Automaton automaton){
 
 int main() {
     srand(time(0)); //необходимо для корректной работы рандома
-    /*
+
     State q0(0, {}, {{0, 1}, {1, 0}});
     State q1(1,{}, {{0, 0}, {5, 2}});
     State q2(2,{}, {{8, 2}, {1, 2}});
@@ -98,7 +100,7 @@ int main() {
     Automaton automaton(states, start, finals, alphabet,EOL);
     
     //Print Automaton
-    automaton.print();
+    //automaton.print();
 
     // Создаем автомат transitions1 - filled. transitions - empty 
     State a0(0, {{-1, 1}, {-1, 2}}, {}); 
@@ -113,9 +115,9 @@ int main() {
     finals = {5}; 
     Automaton automaton2(states, start, finals, alphabet, EOL); 
     // Удаляем эпсилон-переходы 
-    removeEpsilonTransitions(automaton2); 
-    Visualize(automaton2);
-    
+    deleteEps(automaton2); 
+    Visualize(automaton2,cout);
+    /*
     // Try function isAccepted()
     string str = "1105081";
     cout << "Is " << str << " accepted by automaton?: " << isAccepted(automaton, str)<< "\n";
@@ -134,10 +136,10 @@ int main() {
     Automaton automaton3(states2, start2, finals2, alphabet,EOL);
 
     // Visualize Automaton
-    Visualize(automaton3);
+    Visualize(automaton3,cout);
 
     // Canonical Numbering 
-    vector<int> canonicalOrder = canonicalNumbering(automaton2);
+    vector<int> canonicalOrder = canonicalNumbering(automaton3);
 
     // Выводим каноническую нумерацию
     cout << "Canonical Numering: " << std::endl;
@@ -145,16 +147,28 @@ int main() {
         cout << "State " << canonicalOrder[i] << " -> Number " << i << std::endl;
     }
     
-    Visualize(automaton3);
+    Visualize(automaton3,cout);
     */
     // Генерация автомата
 
     Automaton result = generateMAT();
-    removeEpsilonTransitions(result); 
-    result = determinize(result);
-    Visualize(result, cout);
+    deleteEps(result);
+    result.print();
+    Automaton au1 = minimize(result);
+    au1.print();
+    //canonicalOrder = canonicalNumbering(result);
+    ofstream file("generatedAutomaton.txt");
+    if (file.is_open()) {
+        cout << "File Open Access \n";
+        Visualize(result,file); // This should work now
+        file.close();
+    } else {
+        cout << "Failed to open the file.\n";
+    }
+
+    file.close();
 
     chating(result);
-    
+
     return 0;
 }

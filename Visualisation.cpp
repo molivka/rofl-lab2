@@ -1,13 +1,15 @@
+#include "automaton.h"
 #include <iostream>
 #include <vector>
 #include <unordered_map>
 #include <string>
-#include "automaton.h"
 #include <iostream>
 #include <fstream>
+
 using namespace std;
+
 void Visualize(Automaton& automaton,ostream& out) {
-    out<<"digraph {" << '\n';
+    out << "digraph {" << '\n';
     // Указываем начальное состояни
     out << "\trankdir = LR\n";
     out << "\tstart [ shape = point ];" << '\n';

@@ -1,9 +1,10 @@
+#include "automaton.h"
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include <algorithm>
-#include "automaton.h"
+
 using namespace std;
 // Функция для поиска состояния по имени
 unordered_map<int, int> findStateByName(vector<State> states, int name) {
@@ -15,6 +16,7 @@ unordered_map<int, int> findStateByName(vector<State> states, int name) {
     std::unordered_map<int, int> result;
     return result;
 }
+
 void dfs(const Automaton& automaton, int stateIndex, vector<int>& canonicalOrder, unordered_set<int>& visited) { 
     visited.insert(stateIndex); 
     // Добавляем состояние в порядок обхода
@@ -47,6 +49,7 @@ void dfs(const Automaton& automaton, int stateIndex, vector<int>& canonicalOrder
         } 
     } 
 }
+
 void renameStates(Automaton& automaton, const std::vector<int>& canonicalOrder) {
     unordered_map<int, int> nameToCanonical; // Мапа для перевода исходных имен в канонические номера
 
