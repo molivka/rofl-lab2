@@ -1,32 +1,17 @@
-from FAdo.fa import NFA, DFA, Epsilon
-
+from FAdo.fa import NFA, DFA,Epsilon
 nfa = NFA()
-<<<<<<< HEAD
-nfa.addInitial(0)
-nfa.addFinal(5)
-=======
 nfa.addInitial(2)
 nfa.addFinal(131)
 nfa.addFinal(133)
->>>>>>> 9c48d8d (good commit)
 nfa.addState(0)
 nfa.addTransition(0,Epsilon , 1)
-nfa.addTransition(0,Epsilon , 2)
+nfa.addTransition(0,Epsilon , 5)
 nfa.addState(1)
-<<<<<<< HEAD
-nfa.addTransition(1, 2, 3)
-=======
 nfa.addTransition(1, 3, 0)
->>>>>>> 9c48d8d (good commit)
 nfa.addState(2)
-nfa.addTransition(2, 3, 4)
+nfa.addTransition(2,Epsilon , 1)
+nfa.addTransition(2,Epsilon , 5)
 nfa.addState(3)
-<<<<<<< HEAD
-nfa.addTransition(3,Epsilon , 5)
-nfa.addState(4)
-nfa.addTransition(4,Epsilon , 5)
-nfa.addState(5)
-=======
 nfa.addTransition(3,Epsilon , 4)
 nfa.addTransition(3,Epsilon , 127)
 nfa.addState(4)
@@ -448,7 +433,6 @@ nfa.addTransition(132, 3, 131)
 nfa.addState(133)
 nfa.addTransition(133,Epsilon , 132)
 nfa.addTransition(133,Epsilon , 5)
->>>>>>> 9c48d8d (good commit)
 dfa = nfa.elimEpsilon()
 trim = nfa.trim()
 dfa = trim.toDFA()
