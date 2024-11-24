@@ -16,14 +16,14 @@ map<pair<int, int>, int> table; // таблица входимости
 map<string, int> string_in;
 map<int, int> is_main; // хранит флаг принадлежности к основной части, 1 - основная часть, 0 - доп часть
 
-// vector<string> alphabet = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; // алфавит языка
+vector<string> alphabet = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; // алфавит языка
 
-vector<string> alphabet = {"a", "b"};
+// vector<string> alphabet = {"a", "b"};
 
 set<string> all_clases; // набор всех слов-классов
 int closed = 0; // является ли таблица полной
 int consist = 0; // является ли таблица непротиворечивой
-int test_case = 1; // 0 - просто, 1 - с семинара
+int hand_case = 1; // 0 - просто, 1 - с семинара
 
 // вывод основных сущностей
 void print(){
@@ -48,14 +48,14 @@ void print(){
 
 // запрос к мату на принадлежность
 int check(string w){
-    int ans = MAT_check(w);
+    int ans = MAT_check(w, hand_case);
 
     return ans;
 }
 
 // запрос к мату на эквивалентность
 string equivalence(){
-    string answer = MAT_equivalence(S, E, table);
+    string answer = MAT_equivalence(S, E, table, hand_case);
     return answer;
 }
 
@@ -193,9 +193,9 @@ void fill_table(){
 }
 
 int main(int argc, char* argv[]){
-    test_case = *(argv[1]) - '0';
+    hand_case = *(argv[1]) - '0';
     
-    if (test_case){
+    if (hand_case){
         alphabet = {"a", "b"};
     }
 
