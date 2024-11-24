@@ -12,6 +12,8 @@ unordered_map<int, int> findStateByName(vector<State> states, int name) {
             return state.transitions; // Возвращаем указатель на найденное состояние
         }
     }
+    std::unordered_map<int, int> result;
+    return result;
 }
 void dfs(const Automaton& automaton, int stateIndex, vector<int>& canonicalOrder, unordered_set<int>& visited) { 
     visited.insert(stateIndex); 

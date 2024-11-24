@@ -152,7 +152,7 @@ int main() {
     Automaton result = generateMAT();
     removeEpsilonTransitions(result); 
     result = determinize(result);
-    Visualize(result);
+    Visualize(result, cout);
 
     chating(result);
     

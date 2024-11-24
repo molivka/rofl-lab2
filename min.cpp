@@ -10,7 +10,7 @@ bool markTransitions(int s1, int s2, int symbol, const Automaton& automaton, std
     auto it1 = automaton.states[s1].transitions.find(symbol);
     auto it2 = automaton.states[s2].transitions.find(symbol);
 
-    if (it1 == automaton.states[s1].transitions.end() && it2 == automaton.states[s2].transitions.end()) {
+    if (it1 == automaton.states[s1].transitions.end() || it2 == automaton.states[s2].transitions.end()) {
         // Одно из состояний не имеет перехода по символу
         return false;
     }
@@ -35,6 +35,7 @@ Automaton minimize(const Automaton& automaton) {
         }
     }
 //помечаем остальные пары
+
     bool changed;
     do {
         changed = false;
@@ -87,7 +88,8 @@ Automaton minimize(const Automaton& automaton) {
             }
         }
         int state_name = state_to_mainState[*partition.begin()];
-        new_states.emplace_back(state_name, new_transitions);
+        std::multimap<int, int> transitions1;
+        new_states.emplace_back(state_name, transitions1, new_transitions);
     }
 
 // начальное состояние нового автомата
@@ -103,6 +105,11 @@ Automaton minimize(const Automaton& automaton) {
             }
         }
     }
-    
-    return Automaton(new_states, new_start, new_finals, automaton.alphabet);
+
+    return Automaton(new_states, new_start, new_finals, automaton.alphabet, EOL);
+    /* std::vector<State> new_states;
+    int new_start = 0;
+    std::unordered_set<int> new_finals;
+    return Automaton(new_states, new_start, new_finals, automaton.alphabet, EOL);
+    */
 }

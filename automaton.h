@@ -2,6 +2,7 @@
 #define AUTOMATON_H
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <map>
 #include <cstdlib>
@@ -59,6 +60,46 @@ public:
         : states(states), start(start), finals(finals), alphabet(alphabet), type(type) {}
 
     Automaton() {
+    }
+    void exportToPython() {
+        std::ofstream file("removeEps.py");
+        if (file.is_open()) {
+            file<<"from FAdo.fa import NFA, DFA,Epsilon\n";
+            file << "nfa = NFA()\n";
+            file << "nfa.addInitial(" << start << ")\n";
+            for (const auto& final : finals) {
+                file << "nfa.addFinal(" << final << ")\n";
+            }
+            for (const auto& state : states) {
+                file << "nfa.addState(" << state.name << ")\n";
+                for (const auto& transition : state.transitions1) {
+                    if (transition.first != -1) {
+                        file << "nfa.addTransition(" << state.name << ", " << transition.first<< ", " << transition.second << ")\n";
+                    } else {
+                        file << "nfa.addTransition(" << state.name << ",Epsilon , " << transition.second << ")\n";
+
+                    }
+                }
+            }
+            file << "dfa = nfa.elimEpsilon()\n";
+            file << "trim = nfa.trim()\n";
+            file << "dfa = trim.toDFA()\n";
+            file << "print(dfa.Initial)\n";
+            file << "print(len(dfa.Final))\n";
+            file << "for x in dfa.Final:\n";
+            file << "    print(x)\n";
+            file << "\n";
+            file << "transitions = nfa.transitions()\n";
+            file << "states = nfa.States\n";
+            file << "symbols = set()\n";
+            file << "for transition in transitions:\n";
+            file << "    symbols.add(transition[1])\n";
+            file << "    state_from = transition[0]\n";
+            file << "    symbol = transition[1]\n";
+            file << "    state_to = transition[2]\n";
+            file << "    print(state_from, symbol, state_to)\n";
+            file.close();
+        }
     }
 
     Automaton clone() const {

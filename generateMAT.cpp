@@ -235,7 +235,7 @@ Automaton generateLexeme(LexemeType type, const std::vector<int>& alphabet, bool
 
     do {
         std::vector<State> states;
-        int numStates = getRandomNumber(3, 10);
+        int numStates = getRandomNumber(2,3);
 
         for (int i = 0; i < numStates; ++i) {
             std::multimap<int, int> transitions;
@@ -368,7 +368,7 @@ std::vector<Automaton> generateLexemes() {
 }
 
 
-int maxDepth = 3; // Максимальная глубина вложенности скобок
+int maxDepth = 2; // Максимальная глубина вложенности скобок
 Automaton genExpr(int depth);
 Automaton genEolStarExprEolStar(int depth);
 
