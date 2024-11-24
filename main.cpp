@@ -4,8 +4,84 @@
 #include "Visualisation.cpp"
 #include "CanonNum.cpp"
 #include "removeEpsilon.cpp"
+#include "transform.cpp"
+#include <chrono>
+#include <thread>
+#include <string>
+#include <fstream>
+#include <iostream>
 
 using namespace std;
+
+void chating(Automaton automaton){
+    int good_learner = 0;
+    ifstream fin; 
+    ofstream fout; 
+    string line; // считываемая строка
+    while (!good_learner){
+        fin.open("mat_dialog.txt");
+        if (fin.is_open()){
+            getline(fin, line);
+            if (line == "check automat"){
+                vector<string> strings; // считавшиеся строки
+                vector<vector<int>> table; // таблица для transform
+                vector<string> names; // названия классов
+                int n, m; 
+
+                getline(fin, line);
+                n = stoi(line); // кол-во строк
+                getline(fin, line);
+                m = stoi(line); // кол-во столбцов
+
+                while(getline(fin, line, ' ')){
+                    strings.push_back(line);
+                }   
+
+                int cnt = 0;
+                for (int i = 0; i < n; ++i){
+                    vector<int> rows;
+                    for (int j = 0; j < m; ++j){
+                        if (j == 0){
+                            names.push_back(strings[cnt]);
+                            cnt += 1;
+                            continue;
+                        }
+                        rows.push_back(stoi(strings[cnt]));
+                        cnt += 1;
+                    }
+                    table.push_back(rows);
+                }
+                auto lerner_automat = transform(table, names);
+                string is_equal = "FALSE";
+                // здесь сравнить два автоматаи записать в переменную is_equal
+                if (is_equal == "TRUE"){
+                    good_learner = 1;
+                }
+                fout.open("mat_dialog.txt");
+                fout << is_equal;
+                fout.close();
+            }
+            else if (line == "check word"){
+                cout << "WORD\n";
+                getline(fin, line);
+                cout << "int ch word" << endl;
+                bool is_accepted = isAccepted(automaton, line);
+                int answer_to_lerner = 0;
+                if (is_accepted){
+                    good_learner = 1;
+                    answer_to_lerner = 1;
+                }
+                fout.open("mat_dialog.txt");
+                fout << answer_to_lerner;
+                fout.close();
+            }
+        }
+        fin.close();
+        std::chrono::milliseconds timespan(15000); // чтобы лёрнер успел считать
+        std::this_thread::sleep_for(timespan);
+    }
+}
+
 int main() {
     srand(time(0)); //необходимо для корректной работы рандома
     /*
@@ -77,6 +153,8 @@ int main() {
     removeEpsilonTransitions(result); 
     result = determinize(result);
     Visualize(result);
+
+    chating(result);
     
     return 0;
 }

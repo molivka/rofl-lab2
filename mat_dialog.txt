@@ -1,0 +1,4 @@
+check automat
+11
+5
+epsilon 0 0 0 1 b 1 0 0 0 a 0 0 1 0 ba 0 1 0 0 bb 0 0 0 0 aa 0 0 0 1 ab 0 1 0 0 baa 1 0 0 0 bab 0 0 0 0 bba 0 0 0 0 bbb 0 0 0 0
