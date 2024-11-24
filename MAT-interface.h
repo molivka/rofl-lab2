@@ -49,29 +49,28 @@ void push_word_to_file(string s, int hand_case){
 }
 
 string pull_from_file(int hand_case){
-    string line;
+    string answer;
     if (hand_case){
-        cin >> line;
+        cin >> answer;
     }
     else{
         ifstream fin;
         string line;
-        vector<string> answer;
         fin.open("mat_dialog.txt");
         if (fin.is_open()){
             while (getline(fin, line)){
-                answer.push_back(line);
+                answer = line;
             }
         }
         fin.close();
     }
-    return line;
+    return answer;
 }
 
 string MAT_equivalence(map<int, string> S, map<int, string> E, map<pair<int, int>, int> table, int hand_case){
     push_matrix_to_file(S, E, table, hand_case);
     if (!hand_case){
-        int sec_wait = 20;
+        int sec_wait = 8;
         std::chrono::milliseconds timespan(sec_wait * 1000);
         std::this_thread::sleep_for(timespan);
     }
@@ -83,7 +82,7 @@ string MAT_equivalence(map<int, string> S, map<int, string> E, map<pair<int, int
 int MAT_check(string w, int hand_case){
     push_word_to_file(w, hand_case);
     if (!hand_case){
-        int sec_wait = 20;
+        int sec_wait = 8;
         std::chrono::milliseconds timespan(sec_wait * 1000);
         std::this_thread::sleep_for(timespan);
     }

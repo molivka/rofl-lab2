@@ -16,9 +16,9 @@ map<pair<int, int>, int> table; // таблица входимости
 map<string, int> string_in;
 map<int, int> is_main; // хранит флаг принадлежности к основной части, 1 - основная часть, 0 - доп часть
 
-vector<string> alphabet = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; // алфавит языка
+// vector<string> alphabet = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; // алфавит языка
 
-// vector<string> alphabet = {"a", "b"};
+vector<string> alphabet = {"a", "b"};
 
 set<string> all_clases; // набор всех слов-классов
 int closed = 0; // является ли таблица полной
@@ -49,7 +49,6 @@ void print(){
 // запрос к мату на принадлежность
 int check(string w){
     int ans = MAT_check(w, hand_case);
-
     return ans;
 }
 
