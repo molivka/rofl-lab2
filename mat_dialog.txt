@@ -1,2 +1,2 @@
 check word
-aba
+a

@@ -67,10 +67,9 @@ string pull_from_file(int hand_case){
     return answer;
 }
 
-string MAT_equivalence(map<int, string> S, map<int, string> E, map<pair<int, int>, int> table, int hand_case){
+string MAT_equivalence(map<int, string> S, map<int, string> E, map<pair<int, int>, int> table, int hand_case, int sec_wait=20){
     push_matrix_to_file(S, E, table, hand_case);
     if (!hand_case){
-        int sec_wait = 8;
         std::chrono::milliseconds timespan(sec_wait * 1000);
         std::this_thread::sleep_for(timespan);
     }
@@ -79,10 +78,9 @@ string MAT_equivalence(map<int, string> S, map<int, string> E, map<pair<int, int
     return answer;
 }
 
-int MAT_check(string w, int hand_case){
+int MAT_check(string w, int hand_case, int sec_wait=20){
     push_word_to_file(w, hand_case);
     if (!hand_case){
-        int sec_wait = 8;
         std::chrono::milliseconds timespan(sec_wait * 1000);
         std::this_thread::sleep_for(timespan);
     }
