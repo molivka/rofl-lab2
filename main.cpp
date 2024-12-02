@@ -15,7 +15,19 @@
 
 using namespace std;
 
+Automaton prepareForChecks(Automaton automaton) {
+    deleteEps(automaton);
+    automaton.print();
+    Automaton minAutomaton = minimize(automaton);
+    minAutomaton.print();
+    auto canonicalOrder = canonicalNumbering(minAutomaton);
+    minAutomaton.print();
+    return minAutomaton;
+}
+
 void chating(Automaton automaton){
+    Automaton MAT_Automaton = prepareForChecks(automaton);
+    
     int good_learner = 0;
     ifstream fin; 
     ofstream fout; 
@@ -54,10 +66,13 @@ void chating(Automaton automaton){
                     table.push_back(rows);
                 }
                 auto lerner_automat = transform(table, names);
+                Automaton prepared_lerner_automat = prepareForChecks(lerner_automat);
                 string is_equal = "FALSE";
-                // здесь сравнить два автоматаи записать в переменную is_equal
-                if (is_equal == "TRUE"){
+                // здесь сравнить два автомата и записать в переменную is_equal
+                Answer ans = equal(MAT_Automaton, prepared_lerner_automat);
+                if (ans.ok) {
                     good_learner = 1;
+                    is_equal = "TRUE";
                 }
                 fout.open("mat_dialog.txt");
                 fout << is_equal;
@@ -67,7 +82,7 @@ void chating(Automaton automaton){
                 cout << "WORD\n";
                 getline(fin, line);
                 cout << "int ch word" << endl;
-                bool is_accepted = isAccepted(automaton, line);
+                bool is_accepted = isAccepted(MAT_Automaton, line);
                 int answer_to_lerner = 0;
                 if (is_accepted){
                     good_learner = 1;
@@ -152,10 +167,10 @@ int main() {
     // Генерация автомата
 
     Automaton result = generateMAT();
-    deleteEps(result);
+    //deleteEps(result);
     result.print();
-    Automaton au1 = minimize(result);
-    au1.print();
+    //Automaton au1 = minimize(result);
+    //au1.print();
     //canonicalOrder = canonicalNumbering(result);
     ofstream file("generatedAutomaton.txt");
     if (file.is_open()) {

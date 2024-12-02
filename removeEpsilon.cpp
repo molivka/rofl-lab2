@@ -27,7 +27,7 @@ string execute(const char* command) {
 void deleteEps(Automaton& automaton){
     automaton.exportToPython();
     
-    string command = "python -u removeEps.py"; 
+    string command = "python3 -u removeEps.py"; 
     string dfa_output = execute(command.c_str());
     istringstream iss(dfa_output);
     string line;
