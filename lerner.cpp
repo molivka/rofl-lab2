@@ -23,7 +23,7 @@ vector<string> alphabet = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}; //
 set<string> all_clases; // набор всех слов-классов
 int closed = 0; // является ли таблица полной
 int consist = 0; // является ли таблица непротиворечивой
-int hand_case = 1; // 0 - просто, 1 - с семинара
+int hand_case = 1; // 0 - просто, 1 - с семинара, 2 - another mar
 
 // вывод основных сущностей
 void print(){
@@ -49,21 +49,25 @@ void print(){
 // запрос к мату на принадлежность
 int check(string w){
     int ans = MAT_check(w, hand_case);
+    chrono::milliseconds timespan(1 * 1000);
+    this_thread::sleep_for(timespan);
     return ans;
 }
 
 // запрос к мату на эквивалентность
 string equivalence(){
-    string answer = MAT_equivalence(S, E, table, hand_case);
+    string answer = MAT_equivalence(S, E, table, hand_case, is_main);
+    chrono::milliseconds timespan(1 * 1000);
+    this_thread::sleep_for(timespan);
     return answer;
 }
 
 // учитываем пустую строчку при конкатенации
 string concat(string a, string b){
-    if (a == "e"){
+    if (a == "ε"){
         return b;
     }
-    if (b == "e"){
+    if (b == "ε"){
         return a;
     }
     return a + b;
@@ -194,27 +198,29 @@ void fill_table(){
 int main(int argc, char* argv[]){
     hand_case = *(argv[1]) - '0';
     
-    if (hand_case){
+    if (hand_case == 1){
         alphabet = {"a", "b"};
     }
 
     int win = 0;
-    S[0] = "e";
-    E[0] = "e"; // e - пустое слово
+    S[0] = "ε";
+    E[0] = "ε"; // e - пустое слово
 
-    all_clases.insert("e");
+    all_clases.insert("ε");
     is_main[0] = 1; // сразу ставим 1, тк изначально что-то говорим про пустое слово
 
     while (!win){
         fill_table();
         string w = equivalence();
-        if (w == "TRUE"){
+        if (w == "true"){
             win = 1;
         }
         else{
             add_to_suff(w);
             print();
         }
+        chrono::milliseconds timespan(5 * 1000);
+        this_thread::sleep_for(timespan);
     }
 
     return 0;
