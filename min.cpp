@@ -1,5 +1,48 @@
 #include "automaton.h"
-
+Automaton deleteUnreachable(const Automaton& a) {
+    std::unordered_map<int, State> nameToState;
+	for (auto state : a.states) {
+		nameToState.emplace(state.name, state); 
+	}
+    std::unordered_set<int> reachableStates;
+    State currentState = {-1, {}, {}};
+    std::function<void(int)> dfs = [&](int stateName) {
+        reachableStates.insert(stateName);
+        auto it = nameToState.find(stateName);
+        if (it != nameToState.end()) {
+        	currentState = it->second;
+        }
+        for (auto transition : currentState.transitions) {
+            if (reachableStates.find(transition.second) == reachableStates.end()) {
+                dfs(transition.second);
+            }
+        }
+    };
+    
+    dfs(a.start);
+    
+    std::vector<State> newStates;
+    for (auto state : a.states) {
+		if (reachableStates.find(state.name) != reachableStates.end()) {
+		    std::unordered_map<int, int> transitions;
+		    for (auto t : state.transitions) {
+		        if (reachableStates.find(t.second) != reachableStates.end()) {
+		            transitions.emplace(t.first, t.second);
+		        }
+		    }
+		    std::multimap<int, int> transitions1;
+            newStates.emplace_back(state.name, transitions1, transitions);
+		}
+	}
+	std::unordered_set<int> new_finals;
+	for (auto state : a.finals) {
+	    if (reachableStates.find(state) != reachableStates.end()) {
+	        new_finals.insert(state);
+	    }
+	}
+	return Automaton(newStates, a.start, new_finals, a.alphabet, EOL);
+}
+	
 // функция для проверки финальное ли состояние 
 bool areStateFinal(int s, const Automaton& automaton) {
     return (automaton.finals.count(s) > 0);
@@ -106,7 +149,9 @@ Automaton minimize(const Automaton& automaton) {
         }
     }
 
-    return Automaton(new_states, new_start, new_finals, automaton.alphabet, EOL);
+    Automaton new_automaton = Automaton(new_states, new_start, new_finals, automaton.alphabet, EOL);
+    Automaton prepared_automaton = deleteUnreachable(new_automaton);
+    return prepared_automaton;
     /* std::vector<State> new_states;
     int new_start = 0;
     std::unordered_set<int> new_finals;
