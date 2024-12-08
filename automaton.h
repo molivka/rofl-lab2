@@ -81,8 +81,8 @@ public:
                     }
                 }
             }
-            file << "dfa = nfa.elimEpsilon()\n";
-            file << "trim = nfa.trim()\n";
+            file << "nfa1 = nfa.elimEpsilon()\n";
+            file << "trim = nfa1.trim()\n";
             file << "dfa = trim.toDFA()\n";
             file << "print(dfa.Initial)\n";
             file << "print(len(dfa.Final))\n";
