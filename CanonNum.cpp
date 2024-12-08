@@ -67,7 +67,12 @@ void renameStates(Automaton& automaton, const std::vector<int>& canonicalOrder) 
         }
         state.transitions = newTransitions; 
     }
+    std::unordered_set<int> new_finals;
+    for (auto& state : automaton.finals) {
+            new_finals.insert(nameToCanonical[state]);
+    }
     automaton.start = nameToCanonical[automaton.start];
+    automaton.finals = new_finals;
 }
 
 vector<int> canonicalNumbering(Automaton& automaton) {
@@ -78,4 +83,3 @@ vector<int> canonicalNumbering(Automaton& automaton) {
     renameStates(automaton, canonicalOrder);
     return canonicalOrder;
 }
-
