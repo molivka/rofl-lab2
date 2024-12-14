@@ -68,6 +68,7 @@ public:
             file << "nfa = NFA()\n";
             file << "nfa.addInitial(" << start << ")\n";
             for (const auto& final : finals) {
+                std::cout << "FINAL" << final << "\n";
                 file << "nfa.addFinal(" << final << ")\n";
             }
             for (const auto& state : states) {
@@ -77,7 +78,6 @@ public:
                         file << "nfa.addTransition(" << state.name << ", " << transition.first<< ", " << transition.second << ")\n";
                     } else {
                         file << "nfa.addTransition(" << state.name << ",Epsilon , " << transition.second << ")\n";
-
                     }
                 }
             }
@@ -89,8 +89,8 @@ public:
             file << "for x in dfa.Final:\n";
             file << "    print(x)\n";
             file << "\n";
-            file << "transitions = nfa.transitions()\n";
-            file << "states = nfa.States\n";
+            file << "transitions = dfa.transitions()\n";
+            file << "states = dfa.States\n";
             file << "symbols = set()\n";
             file << "for transition in transitions:\n";
             file << "    symbols.add(transition[1])\n";

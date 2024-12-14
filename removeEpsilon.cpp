@@ -50,18 +50,19 @@ void deleteEps(Automaton& automaton) {
         } 
     } 
  
-    Automaton automaton2; 
-    automaton2.start = results[0][0];  // Первое состояние - старт 
+    //Automaton automaton2; 
+    int start = results[0][0];  // Первое состояние - старт 
     int numFinalStates = results[1][0]; // Количество финальных состояний 
- 
+    std::cout << "FINALSTATES" << numFinalStates << "\n";
+    std::unordered_set<int> finals;
     // Добавляем финальные состояния 
     for (int i = 0; i < numFinalStates; i++) { 
-        automaton2.finals.insert(results[i + 2][0]); 
+        finals.insert(results[i + 2][0]); 
     } 
  
     // Используем unordered_map для хранения состояний 
     std::unordered_map<int, State*> stateMap; 
- 
+    std::vector<State> states;
     // Добавляем состояния и переходы 
     for (size_t i = 2 + numFinalStates; i < results.size(); i++) { 
         int fromState = results[i][0]; 
@@ -69,8 +70,8 @@ void deleteEps(Automaton& automaton) {
         // Проверка на существование состояния 
         if (stateMap.find(fromState) == stateMap.end()) { 
             State state = State(fromState, {}, {}); 
-            automaton2.states.emplace_back(state); 
-            stateMap[fromState] = &automaton2.states.back(); // Сохраняем указатель на состояние 
+            states.emplace_back(state); 
+            stateMap[fromState] = &states.back(); // Сохраняем указатель на состояние 
         } 
  
         for (size_t j = 1; j < results[i].size(); j += 2) { 
@@ -78,19 +79,18 @@ void deleteEps(Automaton& automaton) {
             int toState = results[i][j + 1]; 
  
             // Проверка на существование перехода 
-            if (stateMap[fromState]->transitions.find(symbol) == stateMap[fromState]->transitions.end()) { 
-                cout << "Adding transition from " << fromState << " to " << toState << " on symbol " << symbol << endl; 
-                stateMap[fromState]->transitions[symbol] = toState; // Добавляем переход 
-            } 
+            stateMap[fromState]->transitions[symbol] = toState; // Добавляем переход 
+            
         } 
     } 
+    std::cout << "SIZE" << stateMap.size();
  
-    automaton2.alphabet = automaton.alphabet; 
-    automaton = automaton2; 
+    Automaton new_automaton = Automaton(states, start, finals, automaton.alphabet, automaton.type);
+    automaton = new_automaton; 
  
     // Формируем вывод 
     for (const auto& state : automaton.states) { 
-        cout << state.name << " [ shape = " << (automaton2.finals.count(state.name) ? "doublecircle" : "circle") << " ];\n"; 
+        cout << state.name << " [ shape = " << (new_automaton.finals.count(state.name) ? "doublecircle" : "circle") << " ];\n"; 
         for (const auto& transition : state.transitions) { 
             cout << state.name << " -> " << transition.second << " [ label = " << transition.first << " ];\n"; 
         } 

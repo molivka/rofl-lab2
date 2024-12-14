@@ -17,7 +17,7 @@ using namespace std;
 
 Automaton prepareForChecks(Automaton automaton) {
     deleteEps(automaton);
-    automaton.print();
+    //automaton.print();
     Automaton minAutomaton = minimize(automaton);
     minAutomaton.print();
     auto canonicalOrder = canonicalNumbering(minAutomaton);
@@ -37,6 +37,7 @@ void chating(Automaton automaton){
         if (fin.is_open()){
             getline(fin, line);
             if (line == "check automat"){
+                cout << line << "\n";
                 vector<string> strings; // считавшиеся строки
                 vector<vector<int>> table; // таблица для transform
                 vector<string> names; // названия классов
@@ -50,7 +51,7 @@ void chating(Automaton automaton){
                 while(getline(fin, line, ' ')){
                     strings.push_back(line);
                 }   
-
+                cout << "prefixes" << "\n";
                 int cnt = 0;
                 for (int i = 0; i < n; ++i){
                     vector<int> rows;
@@ -65,7 +66,9 @@ void chating(Automaton automaton){
                     }
                     table.push_back(rows);
                 }
+                cout << "table ok \n";
                 auto lerner_automat = transform(table, names);
+                lerner_automat.print();
                 Automaton prepared_lerner_automat = prepareForChecks(lerner_automat);
                 string is_equal = "FALSE";
                 // здесь сравнить два автомата и записать в переменную is_equal
@@ -81,11 +84,11 @@ void chating(Automaton automaton){
             else if (line == "check word"){
                 cout << "WORD\n";
                 getline(fin, line);
-                cout << "int ch word" << endl;
+                cout << line << endl;
                 bool is_accepted = isAccepted(MAT_Automaton, line);
                 int answer_to_lerner = 0;
                 if (is_accepted){
-                    good_learner = 1;
+                    //good_learner = 1;
                     answer_to_lerner = 1;
                 }
                 fout.open("mat_dialog.txt");
@@ -167,11 +170,15 @@ int main() {
     // Генерация автомата
 
     Automaton result = generateMAT();
-    //deleteEps(result);
+    /*result.print();
+    deleteEps(result);
     result.print();
-    //Automaton au1 = minimize(result);
-    //au1.print();
-    //canonicalOrder = canonicalNumbering(result);
+    Automaton e = deleteUnreachable(result);
+    e.print();
+    Automaton au1 = minimize(result);
+    au1.print();
+    vector<int> canonicalOrder = canonicalNumbering(au1);
+    au1.print();*/
     ofstream file("generatedAutomaton.txt");
     if (file.is_open()) {
         cout << "File Open Access \n";
