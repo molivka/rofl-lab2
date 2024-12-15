@@ -19,17 +19,16 @@
 4. Сгенерить параметры (пока что так):
    ```
    import json
-
-  def generate_params():
-      params = {
-          "max_bracket_depth": 5,
-          "max_automaton_size": 100
-      }
-      with open("parameters.txt", "w") as f:
-          json.dump(params, f, indent=4)
-  ...
-  main()
-    generate_params()
+   def generate_params():
+   params = {
+       "max_bracket_depth": 5,
+       "max_automaton_size": 100
+   }
+   with open("parameters.txt", "w") as f:
+       json.dump(params, f, indent=4)
+   ...
+   main()
+       generate_params()
    ```
 
 ## Реализация
@@ -54,7 +53,7 @@
 Данный код был протестирован на:
    1. Примере автомата с консультации по данной лабораторной работе.
    3. На МАТе людей из моей другой группы
-   4. Ручками на локальных тестах.
+   4. На локальных тестах.
 
 ## Замечания
 Описал их в Pull Request, их много, но все касаются данных, передаваемых в stdin
