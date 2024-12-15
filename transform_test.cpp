@@ -14,7 +14,7 @@ int main() {
 	    {0, 0, 0, 0},
 	    {0, 0, 0, 0},
   	};
-  	std::vector<std::string> names = {"epsilon", "1", "2", "12", "11", "22", "21", "122", "121", "112", "111"};
+  	std::vector<std::string> names = {"ε", "1", "2", "12", "11", "22", "21", "122", "121", "112", "111"};
   	Automaton res = transform(table, names);
   	res.print();
 };

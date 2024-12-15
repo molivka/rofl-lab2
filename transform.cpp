@@ -41,16 +41,6 @@ std::vector<std::string> findMinimalNames(const std::vector<std::string>& rows, 
 }
 
 Automaton transform(std::vector<std::vector<int>>& table, std::vector<std::string>& names) {
-	
-	for (auto a : table) {
-		for (auto b : a) {
-			std::cout << b << " ";
-		}
-		std::cout << "\n";
-	}
-	for (auto a : names) {
-		std::cout << a << " ";
-	}
 
 	std::vector<std::string> rows; //список строк из таблицы
 	std::unordered_map<std::string, std::string> nameToRow; //соответствие строки к имени
@@ -63,15 +53,8 @@ Automaton transform(std::vector<std::vector<int>>& table, std::vector<std::strin
 			nameToRow[names[i]] = str;
 		}
 	}
-	std::cout << "nameToRows\n";
-	
 	std::vector<std::string> minimalNames = findMinimalNames(rows, names); //находим список состояний
-	std::cout << "minimalNames\n";
 	std::unordered_map<std::string, std::unordered_map<int, int>> nameToState; //создаем мапу состояние - переходы
-	//for (auto state : minimalNames) {
-		//std::unordered_map<int, int> transitions;
-	//	nameToState[state] = transitions;
-	//}
 	
 	std::unordered_set<int> finals; //смотрим, если в первом столбце 1 - значит финальное
 	for (int i = 0; i < rows.size(); i++) {
@@ -81,8 +64,7 @@ Automaton transform(std::vector<std::vector<int>>& table, std::vector<std::strin
 			}
 		}
 	}
-	
-	std::cout << "startMainPart\n";
+
 	//основная часть алгоритма. проходим по состояниям и для каждого строим переходы в другие состояния по парсингу имени, а так же находим все эквивалентные строки в таблице и по правилу "Если ay = a' (т.е. aу и a' соответствуют одинаковым строчкам в таблице), то (a, y) - a' добавляется в ДКА как переход."
 	for (int i = 0; i < minimalNames.size(); i++) {
 		for (int j = 0; j < rows.size(); j++) {
@@ -123,7 +105,6 @@ Automaton transform(std::vector<std::vector<int>>& table, std::vector<std::strin
       		}
       	}
     }
-    std::cout << "endOfMainPart\n";
     std::vector<State> states;
     for (auto state : nameToState) { //создаем состояния
     	std::multimap<int, int> transitions1;

@@ -17,7 +17,7 @@ using namespace std;
 
 Automaton prepareForChecks(Automaton automaton) {
     deleteEps(automaton);
-    //automaton.print();
+    automaton.print();
     Automaton minAutomaton = minimize(automaton);
     minAutomaton.print();
     auto canonicalOrder = canonicalNumbering(minAutomaton);
