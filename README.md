@@ -18,18 +18,19 @@
    ```
 4. Сгенерить параметры (пока что так):
    ```
-   import json
-   def generate_params():
-   params = {
-       "max_bracket_depth": 5,
-       "max_automaton_size": 100
-   }
-   with open("parameters.txt", "w") as f:
-       json.dump(params, f, indent=4)
-   ...
-   main()
-       generate_params()
-   ```
+    import json
+    import random
+    def generate_params():
+        params = {
+            "max_bracket_depth": random.randint(1, 8),
+            "max_automaton_size": random.randint(10, 100)
+        }
+        with open("parameters.txt", "w") as f:
+            json.dump(params, f, indent=4)
+    ...
+    main()
+        generate_params()
+    ```
 
 ## Реализация
 1. Основными функциями при общении с МАТом являются: проверка слова на принадлежность языку и проверка полученного автомата на эквивалентность

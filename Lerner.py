@@ -1,5 +1,14 @@
 import subprocess
 import json
+import random
+
+def generate_params():
+    params = {
+        "max_bracket_depth": random.randint(1, 8),
+        "max_automaton_size": random.randint(10, 100)
+    }
+    with open("parameters.txt", "w") as f:
+        json.dump(params, f, indent=4)
 
 class LispGuesser:
     def __init__(self, filepath, parameters_path):
@@ -143,6 +152,10 @@ class LispGuesser:
 
 
 def main():
+    print("Cгенерировать параметры Y/N?")
+    s=str(input())
+    if s=="Y":
+        generate_params()
     guesser = LispGuesser("main.cpp", "parameters.txt")
     guesser.run()
     guesser.close()
